@@ -8,12 +8,13 @@ const fs = require('fs')
 const config = require('./config.json')
 const username = config.auth.username
 const password = config.auth.password
+const path = require('path')
 axiosCookieJarSupport(axios);
-const cookieJar = new tough.CookieJar(new FileCookieStore("./cookie.json"));
+const cookieJar = new tough.CookieJar(new FileCookieStore(path.join(__dirname, "./cookie.json")));
 /**
  * [get some necessary info for login]
  */
-async function preLogin(){ 
+async function preLogin(){
 	let preLoginUrl = 'http://login.sina.com.cn/sso/prelogin.php?entry=weibo&callback=sinaSSOController.preloginCallBack&su=MTUyNTUxMjY3OTY%3D&rsakt=mod&checkpin=1&client=ssologin.js%28v1.4.18%29&_=1458836718537'
 	let preLoginResp = await axios.get(preLoginUrl)
 	let preContentRegex = /\((.*?)\)/g
@@ -62,7 +63,7 @@ async function login(username,password){
 	})
 	let loginUrl = /location.replace\(\'(.*?)\'\)/g.exec(loginResp.data)[1]
 	await axios.get(loginUrl,{jar: cookieJar,withCredentials: true})
-}	
+}
 /**
  * @param  {[String]} file {picture path}
  * @return {[String]} {picture pid}
@@ -88,7 +89,7 @@ async function getImgUrl(file){
 			throw 'no img url '
 		}
 	}
-	catch(e){ 
+	catch(e){
 		errTime+=1
 		// console.log('发生错误，重新登录中。。。')
 		if (errTime>5) { //retry time when upload fail
