@@ -27,49 +27,55 @@ async function preLogin(){
  * @param  {[String]} username {weibo account username}
  * @param  {[String]} password {weibo account password }
  */
+var errLogin = 0
 async function login(username,password){
-	let RSAKey = new sinaSSOEncoder.RSAKey();
-	let {nonce, pubkey, servertime, rsakv} = await preLogin()
-	RSAKey.setPublic(pubkey, "10001");
-  	passwd = RSAKey.encrypt([servertime, nonce].join("\t") + "\n" + password)
-  	username = new Buffer(encodeURIComponent(username)).toString('base64')
-  	data = {
-  		'entry': 'weibo',
-        'gateway': '1',
-        'from': '',
-        'savestate': '7',
-        'useticket': '1',
-        'pagerefer': 'http://weibo.com/p/1005052679342531/home?from=page_100505&mod=TAB&pids=plc_main',
-        'vsnf': '1',
-        'su': username,
-        'service': 'miniblog',
-        'servertime': servertime,
-        'nonce': nonce,
-        'pwencode': 'rsa2',
-        'rsakv': rsakv,
-        'sp': passwd,
-        'sr': '1366*768',
-        'encoding': 'UTF-8',
-        'prelt': '115',
-        'url': 'http://weibo.com/ajaxlogin.php?framelogin=1&callback=parent.sinaSSOController.feedBackUrlCallBack',
-        'returntype': 'META'
-  	}
-  	url = 'http://login.sina.com.cn/sso/login.php?client=ssologin.js(v1.4.18)'
-	let loginResp = await axios.post(url, querystring.stringify(data),{
-		jar: cookieJar,
-		headers: {
-			'User-Agent':'Mozilla/5.0 (Windows NT 6.3; WOW64; rv:41.0) Gecko/20100101 Firefox/41.0',
-		}
-	})
-	let loginUrl = /location.replace\(\'(.*?)\'\)/g.exec(loginResp.data)[1]
-	await axios.get(loginUrl,{jar: cookieJar,withCredentials: true})
+	try{
+		let RSAKey = new sinaSSOEncoder.RSAKey();
+		let {nonce, pubkey, servertime, rsakv} = await preLogin()
+		RSAKey.setPublic(pubkey, "10001");
+	  	passwd = RSAKey.encrypt([servertime, nonce].join("\t") + "\n" + password)
+	  	username = new Buffer(encodeURIComponent(username)).toString('base64')
+	  	data = {
+	  		'entry': 'weibo',
+	        'gateway': '1',
+	        'from': '',
+	        'savestate': '7',
+	        'useticket': '1',
+	        'pagerefer': 'http://weibo.com/p/1005052679342531/home?from=page_100505&mod=TAB&pids=plc_main',
+	        'vsnf': '1',
+	        'su': username,
+	        'service': 'miniblog',
+	        'servertime': servertime,
+	        'nonce': nonce,
+	        'pwencode': 'rsa2',
+	        'rsakv': rsakv,
+	        'sp': passwd,
+	        'sr': '1366*768',
+	        'encoding': 'UTF-8',
+	        'prelt': '115',
+	        'url': 'http://weibo.com/ajaxlogin.php?framelogin=1&callback=parent.sinaSSOController.feedBackUrlCallBack',
+	        'returntype': 'META'
+	  	}
+	  	url = 'http://login.sina.com.cn/sso/login.php?client=ssologin.js(v1.4.18)'
+		let loginResp = await axios.post(url, querystring.stringify(data),{
+			jar: cookieJar,
+			headers: {
+				'User-Agent':'Mozilla/5.0 (Windows NT 6.3; WOW64; rv:41.0) Gecko/20100101 Firefox/41.0',
+			}
+		})
+		let loginUrl = /location.replace\(\'(.*?)\'\)/g.exec(loginResp.data)[1]
+		await axios.get(loginUrl,{jar: cookieJar,withCredentials: true})
+	}
+	catch(e){
+		
+	}
 }
 /**
  * @param  {[String]} file {picture path}
  * @return {[String]} {picture pid}
  */
+var errTime = 0
 async function getImgUrl(file){
-	var errTime = 0
 	try{
 		let bitmap = fs.readFileSync(file)
 		let base64Img = new Buffer(bitmap).toString('base64')
